@@ -1,5 +1,27 @@
+pub enum Direction {
+    North,
+    South
+}
+
+pub struct Card {
+    color: i32,
+    number: i32,
+}
+
+pub enum ClaimStatus {
+    Unclaimed,
+    North,
+    South,
+}
+
+
 pub enum Message {
     Blank,
+    PlayerDirection{ x: Direction},
+    ColorNames,//{ nums: [String]},
+    FlagClaimStatus,//{ nums: [ClaimStatus]},
+    FlagStatus,//{ number, direction, cards},
+    OpponentPlay, //{ number, card }
     PlayCard,
 }
 
