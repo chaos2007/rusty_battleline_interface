@@ -1,6 +1,14 @@
 extern crate regex;
 use regex::Regex;
 
+pub struct Response {
+    response: Option<String>
+}
+
+pub trait ai_handler {
+    fn handleMessage(&self, Message) -> Option<String>;
+}
+
 pub enum Direction {
     North,
     South
@@ -26,10 +34,6 @@ pub enum Message {
     FlagStatus,//{ number, direction, cards},
     OpponentPlay{ number: i32, card: Card },
     PlayCard,
-}
-
-pub struct Response {
-    response: String,
 }
 
 pub fn parse_message(message: String) -> Message {
