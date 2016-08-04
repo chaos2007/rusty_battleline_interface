@@ -1,3 +1,4 @@
+#![feature(advanced_slice_patterns, slice_patterns)]
 extern crate regex;
 use regex::Regex;
 
@@ -37,32 +38,29 @@ pub enum Message {
 }
 
 pub fn parse_message(message: String) -> Message {
-    let opMessage = Regex::new(r"opponent play (?P<flag>[1-9]) (?P<color>\S+),(?P<number>\d+)").unwrap();
-    let playerDirectionMessage = Regex::new(r"player (?P<direction>north|south) name").unwrap();
+/*    let opMessage = Regex::new(r"opponent play (?P<flag>[1-9]) (?P<color>\S+),(?P<number>\d+)").unwrap();
     let colorsMessage = Regex::new(r"colors( \S+){6}").unwrap();
     let playerHandMessage = Regex::new(r"player (north|south) hand( \S+,\d+)*").unwrap();
     let claimStatusMessage = Regex::new(r"flag claim-status( north| south| unclaimed){9}").unwrap();
     let flagCardsMessage = Regex::new(r"flag ([1-9]) cards (north|south)( \S+,\d+)*").unwrap();
-    if opMessage.is_match(message.as_str()) {
-        let cap = opMessage.captures(message.as_str()).unwrap();
-        let a = cap.name("flag").unwrap().parse::<i32>().unwrap();
-        let b = String::from(cap.name("color").unwrap());
-        let c = cap.name("number").unwrap().parse::<i32>().unwrap();
-        Message::OpponentPlay{ number: a, card: Card{ color:b, number:c }}
-    }
-    else if playerDirectionMessage.is_match(message.as_str()) {
-        let cap = playerDirectionMessage.captures(message.as_str()).unwrap();
-        let a = cap.name("direction").unwrap();
-        if "north" == a {
-            Message::PlayerDirection{ direction: Direction::North }
-        } else {
-            Message::PlayerDirection{ direction: Direction::South }
-        }
-    }
-    else if message == "go play-card" {
-        Message::PlayCard
-    } else {
-        Message::Blank
+    */
+    let split: Vec<&str> = message.split_whitespace().collect();
+    match split.as_slice() {
+        &["go", "play-card"] => Message::PlayCard,
+        &["player", direction, "name"] if direction == "north" || direction == "south" => {
+            match direction {
+                "north" => Message::PlayerDirection{ direction: Direction::North },
+                _ => Message::PlayerDirection{ direction: Direction::South}
+            }
+        },
+        &["opponent", "play", flag, card] if flag >= "1" && flag <= "9" => {
+            let a = flag.parse::<i32>().unwrap();
+            let split: Vec<&str>  = card.split(',').collect();
+            let b = String::from(split[0]);
+            let c = split[1].parse::<i32>().unwrap();
+            Message::OpponentPlay{ number: a, card: Card{ color: b, number:c}}
+        },
+        _ => Message::Blank,
     }
 }
 
