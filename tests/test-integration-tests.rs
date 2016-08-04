@@ -1,20 +1,12 @@
-#[cfg(not(test))]
-fn main() {
-        println!("If you see this, the tests were not compiled nor ran!");
-}
+extern crate rusty_battleline_interface as rbi;
 
-// Conditionally compile the module `test` only when the test-suite is run.
-#[cfg(test)]
-mod integration_tests {
-
-    #[test]
-    fn pass_test() {
-    }
-
-    #[test]
-    #[should_panic]
-    fn failing_test() {
-        assert!(1i32 == 2i32);
+#[test]
+fn confirmParsingMessage() {
+    let x = rbi::parse_message(String::from("go play-card"));
+    match x {
+        rbi::Message::PlayCard => {
+        },
+        _ => panic!("Wrong Card type."),
     }
 }
 

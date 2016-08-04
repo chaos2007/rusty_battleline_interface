@@ -1,10 +1,13 @@
+extern crate regex;
+use regex::Regex;
+
 pub enum Direction {
     North,
     South
 }
 
 pub struct Card {
-    color: i32,
+    color: String,
     number: i32,
 }
 
@@ -21,13 +24,29 @@ pub enum Message {
     ColorNames,//{ nums: [String]},
     FlagClaimStatus,//{ nums: [ClaimStatus]},
     FlagStatus,//{ number, direction, cards},
-    OpponentPlay, //{ number, card }
+    OpponentPlay{ number: i32, card: Card },
     PlayCard,
 }
 
-pub fn parse_message(message: String) -> Message {
+pub struct Response {
+    response: String,
+}
 
-    if message == "go play-card" {
+pub fn parse_message(message: String) -> Message {
+    let opMessage = Regex::new(r"opponent play ([1-9]) (\S+),(\d+)").unwrap();
+    let playerNameMessage = Regex::new(r"player (north|south) name").unwrap();
+    let colorsMessage = Regex::new(r"colors( \S+){6}").unwrap();
+    let playerHandMessage = Regex::new(r"player (north|south) hand( \S+,\d+)*").unwrap();
+    let claimStatusMessage = Regex::new(r"flag claim-status( north| south| unclaimed){9}").unwrap();
+    let flagCardsMessage = Regex::new(r"flag ([1-9]) cards (north|south)( \S+,\d+)*").unwrap();
+    if opMessage.is_match(message.as_str()) {
+        let cap = opMessage.captures(message.as_str()).unwrap();
+        let a = cap.at(1).unwrap().parse::<i32>().unwrap();
+        let b = String::from(cap.at(2).unwrap());
+        let c = cap.at(3).unwrap().parse::<i32>().unwrap();
+        Message::OpponentPlay{ number: a, card: Card{ color:b, number:c }}
+    }
+    else if message == "go play-card" {
         Message::PlayCard
     } else {
         Message::Blank
@@ -58,4 +77,18 @@ mod test_parsing_messages{
             _ => panic!("Wrong Card type."),
         }
     }
+    
+    #[test]
+    fn opponent_play_message() {
+        let x = parse_message(String::from("opponent play 3 red,5"));
+        match x {
+            Message::OpponentPlay{number: number, card: card} => {
+                assert_eq!(String::from("red"), card.color);
+                assert_eq!(5, card.number);
+                assert_eq!(3, number);
+            },
+            _ => panic!("Wrong Card type."),
+        }
+    }
 }
+
