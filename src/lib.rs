@@ -26,6 +26,7 @@ pub enum Message {
         c7:ClaimStatus, c8:ClaimStatus, c9:ClaimStatus, },
     FlagStatus,//{ number, direction, cards},
     OpponentPlay{ number: i32, card: Card },
+    PlayerHandMessage{ direction: Direction, cards: Vec<Card> },
     PlayCard,
 }
 
@@ -46,6 +47,13 @@ pub fn parse_message(message: String) -> Message {
     let split: Vec<&str> = message.split_whitespace().collect();
     match split.as_slice() {
         &["go", "play-card"] => Message::PlayCard,
+        &["player", direction, "hand", ref hand..] => {
+            for x in hand {
+                println!("{}",x);
+            }
+
+            Message::Blank
+        },
         &["player", direction, "name"] if direction == "north" || direction == "south" => {
             match direction {
                 "north" => Message::PlayerDirection{ direction: Direction::North },
@@ -154,6 +162,18 @@ mod test_parsing_messages{
                 c6:ClaimStatus::North, c7:ClaimStatus::South,
                 c8:ClaimStatus::North, c9:ClaimStatus::Unclaimed } => {
                 },
+            e => panic!("Wrong Card type."),
+        }
+    }
+    
+    #[test]
+    fn player_hand_message() {
+        let x = parse_message(String::from("player north hand red,3 blue,4"));
+        let mut vec = Vec::new(); vec.push(Card{color:String::from("red"),number:3});
+        vec.push(Card{color:String::from("blue"),number:4});
+        match x {
+            Message::PlayerHandMessage{direction:Direction::North, cards: vec } => {
+            }, 
             e => panic!("Wrong Card type."),
         }
     }
