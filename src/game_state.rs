@@ -6,12 +6,15 @@ pub trait AiInterface {
     fn get_bot_name(&self) -> String;
 }
 
+#[derive(Default)]
 pub struct GameState {
 }
 
+#[derive(Default)]
 pub struct GameHandler {
     state: GameState,
 }
+
 
 impl GameHandler {
     fn run_one_round(&self, ai: &AiInterface) {
