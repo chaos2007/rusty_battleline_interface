@@ -1,15 +1,15 @@
 use message_parsing;
 use std::io;
 
-trait AiInterface {
+pub trait AiInterface {
     fn update_game_state(&self, state: &GameState) -> String;
     fn get_bot_name(&self) -> String;
 }
 
-struct GameState {
+pub struct GameState {
 }
 
-struct GameHandler {
+pub struct GameHandler {
     state: GameState,
 }
 
