@@ -55,6 +55,14 @@ fn convert_direction(message: &str) -> Direction {
     }
 }
 
+pub fn get_direction_string(direction: Direction) -> String {
+    match direction {
+        Direction::North => String::from("north"),
+        Direction::South => String::from("south"),
+    }
+}
+
+
 fn convert_claim_status(message: &str) -> ClaimStatus {
     match message {
         "north" => ClaimStatus::North,
