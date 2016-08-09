@@ -17,7 +17,7 @@ pub struct GameHandler {
 
 
 impl GameHandler {
-    fn run_one_round(&self, ai: &AiInterface) {
+    pub fn run_one_round(&self, ai: &AiInterface) {
         let mut message = String::new();
         io::stdin()
             .read_line(&mut message)
