@@ -1,19 +1,32 @@
+#[derive(PartialEq, Copy, Clone)]
 pub enum Direction {
     North,
     South,
 }
 
-pub struct Card {
-    color: String,
-    number: i32,
+impl Default for Direction {
+    fn default() -> Direction {
+        Direction::North
+    }
 }
 
+pub struct Card {
+    pub color: String,
+    pub number: i32,
+}
+
+#[derive(PartialEq)]
 pub enum ClaimStatus {
     Unclaimed,
     North,
     South,
 }
 
+impl Default for ClaimStatus {
+    fn default() -> ClaimStatus {
+        ClaimStatus::Unclaimed
+    }
+}
 
 pub enum Message {
     Blank,
@@ -21,18 +34,13 @@ pub enum Message {
         direction: Direction,
     },
     ColorNames {
-        c1: String,
-        c2: String,
-        c3: String,
-        c4: String,
-        c5: String,
-        c6: String,
+        colors: Vec<String>,
     },
     FlagClaimStatus {
-        flagsClaimed: Vec<ClaimStatus>,
+        flags_claimed: Vec<ClaimStatus>,
     },
     FlagStatus {
-        flagNum: u32,
+        flag_num: u32,
         direction: Direction,
         cards: Vec<Card>,
     },
@@ -89,27 +97,27 @@ pub fn parse_message(message: String) -> Message {
         &["player", direction, "hand", ref cards..] if cards.len() <= 7 &&
                                                        (direction == "north" ||
                                                         direction == "south") => {
-            let mut playerCards = Vec::new();
+            let mut player_cards = Vec::new();
             for i in cards {
-                playerCards.push(convert_string_to_card(i));
+                player_cards.push(convert_string_to_card(i));
             }
             Message::PlayerHand {
                 direction: convert_direction(direction),
-                cards: playerCards,
+                cards: player_cards,
             }
         }
         &["flag", flag, "cards", direction, ref cards..] if flag >= "1" && flag <= "9" &&
                                                             (direction == "north" ||
                                                              direction == "south") => {
-            let mut flagsCards = Vec::new();
+            let mut flags_cards = Vec::new();
             let a = flag.parse::<u32>().unwrap();
             for i in cards {
-                flagsCards.push(convert_string_to_card(i));
+                flags_cards.push(convert_string_to_card(i));
             }
             Message::FlagStatus {
-                flagNum: a,
+                flag_num: a,
                 direction: convert_direction(direction),
-                cards: flagsCards,
+                cards: flags_cards,
             }
         }
         &["player", direction, "name"] if direction == "north" || direction == "south" => {
@@ -125,22 +133,19 @@ pub fn parse_message(message: String) -> Message {
                 card: convert_string_to_card(card),
             }
         }
-        &["colors", c1, c2, c3, c4, c5, c6] => {
-            Message::ColorNames {
-                c1: String::from(c1),
-                c2: String::from(c2),
-                c3: String::from(c3),
-                c4: String::from(c4),
-                c5: String::from(c5),
-                c6: String::from(c6),
+        &["colors", ref colors..] if colors.len() == 6 => {
+            let mut colors_vec: Vec<String> = Vec::new();
+            for i in colors {
+                colors_vec.push(String::from(*i));
             }
+            Message::ColorNames { colors: colors_vec }
         }
-        &["flag", "claim-status", ref flagClaims..] if flagClaims.len() == 9 => {
+        &["flag", "claim-status", ref flag_claims..] if flag_claims.len() == 9 => {
             let mut claims = Vec::new();
-            for i in flagClaims {
+            for i in flag_claims {
                 claims.push(convert_claim_status(i));
             }
-            Message::FlagClaimStatus { flagsClaimed: claims }
+            Message::FlagClaimStatus { flags_claimed: claims }
         }
         &["player", direction, hand, ref cards..] => Message::Blank,
         &["flag", number, "cards", direction, ref cards..] => Message::Blank,
@@ -200,34 +205,34 @@ mod test_parsing_messages {
     #[test]
     fn color_names_message() {
         let x = parse_message(String::from("colors a b c d e f"));
+        let color_vec = vec![String::from("a"),
+                             String::from("b"),
+                             String::from("c"),
+                             String::from("d"),
+                             String::from("e"),
+                             String::from("f")];
         match x {
-            Message::ColorNames { ref c1, ref c2, ref c3, ref c4, ref c5, ref c6 } if c1 == "a" &&
-                                                                                      c2 == "b" &&
-                                                                                      c3 == "c" &&
-                                                                                      c4 == "d" &&
-                                                                                      c5 == "e" &&
-                                                                                      c6 == "f" => {
-            }
+            Message::ColorNames { colors: color_vec } => {}
             _ => panic!("Wrong Card type."),
         }
     }
 
     #[test]
     fn flag_claim_message() {
-        let claimVec = vec![ClaimStatus::North,
-                            ClaimStatus::South,
-                            ClaimStatus::Unclaimed,
-                            ClaimStatus::Unclaimed,
-                            ClaimStatus::South,
-                            ClaimStatus::North,
-                            ClaimStatus::South,
-                            ClaimStatus::North,
-                            ClaimStatus::Unclaimed];
+        let claim_vec = vec![ClaimStatus::North,
+                             ClaimStatus::South,
+                             ClaimStatus::Unclaimed,
+                             ClaimStatus::Unclaimed,
+                             ClaimStatus::South,
+                             ClaimStatus::North,
+                             ClaimStatus::South,
+                             ClaimStatus::North,
+                             ClaimStatus::Unclaimed];
 
         let x = parse_message(String::from("flag claim-status north south unclaimed unclaimed \
                                             south north south north unclaimed"));
         match x {
-            Message::FlagClaimStatus { flagsClaimed: claimVec } => {}
+            Message::FlagClaimStatus { flags_claimed: claim_vec } => {}
             e => panic!("Wrong Card type."),
         }
     }
@@ -244,7 +249,7 @@ mod test_parsing_messages {
                          }];
         let x = parse_message(String::from("flag 3 cards north red,3 blue,9"));
         match x {
-            Message::FlagStatus { flagNum: 3, direction: Direction::North, cards: cards } => {}
+            Message::FlagStatus { flag_num: 3, direction: Direction::North, cards: cards } => {}
             _ => panic!("Wrong Card type."),
         }
     }
