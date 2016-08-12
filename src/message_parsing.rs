@@ -10,13 +10,13 @@ impl Default for Direction {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Card {
     pub color: String,
     pub number: i32,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum ClaimStatus {
     Unclaimed,
     North,
