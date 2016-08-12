@@ -44,6 +44,11 @@ impl GameHandler {
                                                    direction: direction,
                                                    cards: cards } => {
 
+                for card in &cards {
+                    if let Some(index) = self.state.deck.iter().position(|i| *i == *card) {
+                        self.state.deck.remove(index);
+                    }
+                }
                 if self.state.player_side.len() == 0 || self.state.opponent_side.len() == 0 {
                     for i in 1..10 {
                         self.state.player_side.push(vec![]);
@@ -265,5 +270,29 @@ mod test_game_state {
         handler.run_one_round(&ai, String::from("player north name"));
         handler.run_one_round(&ai, String::from("player north hand a,7 c,3"));
         assert_eq!(expected_cards, handler.state.player_hand);
+    }
+
+    #[test]
+    fn remove_from_deck_when_flag_status() {
+        let mut handler: GameHandler = Default::default();
+        let ai = TestAi {};
+        let expected_cards = vec![mp::Card {
+                                      color: String::from("a"),
+                                      number: 7,
+                                  },
+                                  mp::Card {
+                                      color: String::from("c"),
+                                      number: 3,
+                                  }];
+        handler.run_one_round(&ai, String::from("colors a b c d e f"));
+        handler.run_one_round(&ai, String::from("player north name"));
+        for x in &expected_cards {
+            assert!(handler.state.deck.contains(&x));
+        }
+        handler.run_one_round(&ai, String::from("flag 1 cards north a,7 c,3"));
+        assert_eq!(52, handler.state.deck.len());
+        for x in &expected_cards {
+            assert!(!handler.state.deck.contains(&x));
+        }
     }
 }
