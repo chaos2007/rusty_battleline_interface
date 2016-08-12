@@ -9,11 +9,11 @@ pub trait AiInterface {
 pub struct GameState {
     pub player_direction: message_parsing::Direction,
     pub opponent_direction: message_parsing::Direction,
-    deck: Vec<message_parsing::Card>,
-    colors: Vec<String>,
-    claim_status: Vec<message_parsing::ClaimStatus>,
-    opponent_side: Vec<Vec<message_parsing::Card>>,
-    player_side: Vec<Vec<message_parsing::Card>>,
+    pub deck: Vec<message_parsing::Card>,
+    pub colors: Vec<String>,
+    pub claim_status: Vec<message_parsing::ClaimStatus>,
+    pub opponent_side: Vec<Vec<message_parsing::Card>>,
+    pub player_side: Vec<Vec<message_parsing::Card>>,
     pub player_hand: Vec<message_parsing::Card>,
 }
 
