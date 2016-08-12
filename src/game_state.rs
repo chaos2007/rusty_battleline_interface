@@ -7,14 +7,14 @@ pub trait AiInterface {
 
 #[derive(Default)]
 pub struct GameState {
-    player_direction: message_parsing::Direction,
-    opponent_direction: message_parsing::Direction,
+    pub player_direction: message_parsing::Direction,
+    pub opponent_direction: message_parsing::Direction,
     deck: Vec<message_parsing::Card>,
     colors: Vec<String>,
     claim_status: Vec<message_parsing::ClaimStatus>,
     opponent_side: Vec<Vec<message_parsing::Card>>,
     player_side: Vec<Vec<message_parsing::Card>>,
-    player_hand: Vec<message_parsing::Card>,
+    pub player_hand: Vec<message_parsing::Card>,
 }
 
 #[derive(Default)]
