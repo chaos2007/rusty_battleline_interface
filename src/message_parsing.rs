@@ -10,12 +10,13 @@ impl Default for Direction {
     }
 }
 
+#[derive(PartialEq, Debug)]
 pub struct Card {
     pub color: String,
     pub number: i32,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum ClaimStatus {
     Unclaimed,
     North,
@@ -28,6 +29,7 @@ impl Default for ClaimStatus {
     }
 }
 
+// #[derive(PartialEq)]
 pub enum Message {
     Blank,
     PlayerDirection {
