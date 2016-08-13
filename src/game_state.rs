@@ -81,6 +81,12 @@ impl GameHandler {
             }
             message_parsing::Message::ColorNames { colors: colors } => {
                 for i in 1..10 {
+                    self.state.player_side.push(vec![]);
+                    self.state.opponent_side.push(vec![]);
+                    self.state.claim_status.push(message_parsing::ClaimStatus::Unclaimed);
+                }
+
+                for i in 1..10 {
                     for x in colors.to_vec() {
                         self.state.deck.push(message_parsing::Card {
                             color: x,
@@ -294,5 +300,17 @@ mod test_game_state {
         for x in &expected_cards {
             assert!(!handler.state.deck.contains(&x));
         }
+    }
+
+    #[test]
+    fn default_vectors_after_certain_commands() {
+        let mut handler: GameHandler = Default::default();
+        let ai = TestAi {};
+        handler.run_one_round(&ai, String::from("colors a b c d e f"));
+        assert_eq!(54, handler.state.deck.len());
+        assert_eq!(6, handler.state.colors.len());
+        assert_eq!(9, handler.state.claim_status.len());
+        assert_eq!(9, handler.state.opponent_side.len());
+        assert_eq!(9, handler.state.player_side.len());
     }
 }
