@@ -19,7 +19,7 @@ pub struct GameState {
 
 #[derive(Default)]
 pub struct GameHandler {
-    state: GameState,
+    pub state: GameState,
 }
 
 
