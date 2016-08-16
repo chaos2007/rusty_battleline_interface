@@ -27,12 +27,12 @@ impl GameHandler {
     pub fn run_one_round(&mut self, ai: &AiInterface, message: String) {
         let x = message_parsing::parse_message(message);
         match x {
-            message_parsing::Message::OpponentPlay { number: number, card: card } => {
+            message_parsing::Message::OpponentPlay { number: _, card } => {
                 if let Some(index) = self.state.deck.iter().position(|i| *i == card) {
                     self.state.deck.remove(index);
                 }
             }
-            message_parsing::Message::PlayerHand { direction: direction, cards: cards } => {
+            message_parsing::Message::PlayerHand { direction: _, cards } => {
                 for card in &cards {
                     if let Some(index) = self.state.deck.iter().position(|i| *i == *card) {
                         self.state.deck.remove(index);
@@ -41,8 +41,8 @@ impl GameHandler {
                 self.state.player_hand = cards;
             }
             message_parsing::Message::FlagStatus { flag_num: num,
-                                                   direction: direction,
-                                                   cards: cards } => {
+                                                   direction,
+                                                   cards } => {
 
                 for card in &cards {
                     if let Some(index) = self.state.deck.iter().position(|i| *i == *card) {
@@ -50,7 +50,7 @@ impl GameHandler {
                     }
                 }
                 if self.state.player_side.len() == 0 || self.state.opponent_side.len() == 0 {
-                    for i in 1..10 {
+                    for _ in 1..10 {
                         self.state.player_side.push(vec![]);
                         self.state.opponent_side.push(vec![]);
                     }
@@ -64,7 +64,7 @@ impl GameHandler {
             message_parsing::Message::FlagClaimStatus { flags_claimed: claims } => {
                 self.state.claim_status = claims;
             }
-            message_parsing::Message::PlayerDirection { direction: direction, .. } => {
+            message_parsing::Message::PlayerDirection { direction, .. } => {
                 self.state.player_direction = if direction == message_parsing::Direction::North {
                     message_parsing::Direction::North
                 } else {
@@ -79,8 +79,8 @@ impl GameHandler {
                          message_parsing::get_direction_string(direction),
                          ai.get_bot_name());
             }
-            message_parsing::Message::ColorNames { colors: colors } => {
-                for i in 1..10 {
+            message_parsing::Message::ColorNames { colors } => {
+                for _ in 1..10 {
                     self.state.player_side.push(vec![]);
                     self.state.opponent_side.push(vec![]);
                     self.state.claim_status.push(message_parsing::ClaimStatus::Unclaimed);
@@ -114,7 +114,7 @@ mod test_game_state {
     }
 
     impl AiInterface for TestAi {
-        fn update_game_state(&self, state: &GameState) -> String {
+        fn update_game_state(&self, _: &GameState) -> String {
             return String::from("play 1 red,1");
         }
 
@@ -172,7 +172,7 @@ mod test_game_state {
         let mut handler: GameHandler = Default::default();
         let ai = TestAi {};
         let mut expected: Vec<Vec<mp::Card>> = Vec::with_capacity(9);
-        for i in 1..10 {
+        for _ in 1..10 {
             expected.push(vec![]);
         }
         expected[0] = vec![mp::Card {
@@ -193,7 +193,7 @@ mod test_game_state {
         let mut handler: GameHandler = Default::default();
         let ai = TestAi {};
         let mut expected: Vec<Vec<mp::Card>> = Vec::with_capacity(9);
-        for i in 1..10 {
+        for _ in 1..10 {
             expected.push(vec![]);
         }
         expected[1] = vec![mp::Card {
@@ -213,12 +213,6 @@ mod test_game_state {
     fn remove_card_when_opponent_played() {
         let mut handler: GameHandler = Default::default();
         let ai = TestAi {};
-        let colors = vec![String::from("a"),
-                          String::from("b"),
-                          String::from("c"),
-                          String::from("d"),
-                          String::from("e"),
-                          String::from("f")];
         let expected_card = mp::Card {
             color: String::from("a"),
             number: 7,
@@ -234,12 +228,6 @@ mod test_game_state {
     fn remove_card_when_given_player_hand() {
         let mut handler: GameHandler = Default::default();
         let ai = TestAi {};
-        let colors = vec![String::from("a"),
-                          String::from("b"),
-                          String::from("c"),
-                          String::from("d"),
-                          String::from("e"),
-                          String::from("f")];
         let expected_cards = vec![mp::Card {
                                       color: String::from("a"),
                                       number: 7,

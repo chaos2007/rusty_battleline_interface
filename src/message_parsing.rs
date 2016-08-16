@@ -149,8 +149,6 @@ pub fn parse_message(message: String) -> Message {
             }
             Message::FlagClaimStatus { flags_claimed: claims }
         }
-        &["player", direction, hand, ref cards..] => Message::Blank,
-        &["flag", number, "cards", direction, ref cards..] => Message::Blank,
         _ => Message::Blank,
     }
 }
@@ -214,7 +212,9 @@ mod test_parsing_messages {
                              String::from("e"),
                              String::from("f")];
         match x {
-            Message::ColorNames { colors: color_vec } => {}
+            Message::ColorNames { colors } => {
+                assert_eq!(color_vec, colors);
+            }
             _ => panic!("Wrong Card type."),
         }
     }
@@ -234,14 +234,16 @@ mod test_parsing_messages {
         let x = parse_message(String::from("flag claim-status north south unclaimed unclaimed \
                                             south north south north unclaimed"));
         match x {
-            Message::FlagClaimStatus { flags_claimed: claim_vec } => {}
-            e => panic!("Wrong Card type."),
+            Message::FlagClaimStatus { flags_claimed } => {
+                assert_eq!(claim_vec, flags_claimed);
+            }
+            _ => panic!("Wrong Card type."),
         }
     }
 
     #[test]
     fn flag_card_message() {
-        let cards = vec![Card {
+        let cards_vec = vec![Card {
                              color: String::from("red"),
                              number: 3,
                          },
@@ -251,14 +253,16 @@ mod test_parsing_messages {
                          }];
         let x = parse_message(String::from("flag 3 cards north red,3 blue,9"));
         match x {
-            Message::FlagStatus { flag_num: 3, direction: Direction::North, cards: cards } => {}
+            Message::FlagStatus { flag_num: 3, direction: Direction::North, cards } => {
+                assert_eq!(cards_vec, cards);
+            }
             _ => panic!("Wrong Card type."),
         }
     }
 
     #[test]
     fn player_hand_message() {
-        let cards = vec![Card {
+        let cards_vec = vec![Card {
                              color: String::from("red"),
                              number: 3,
                          },
@@ -272,7 +276,9 @@ mod test_parsing_messages {
                          }];
         let x = parse_message(String::from("player north hand red,3 blue,6 green,4"));
         match x {
-            Message::PlayerHand { direction: Direction::North, cards: cards } => {}
+            Message::PlayerHand { direction: Direction::North, cards } => {
+                assert_eq!(cards_vec, cards);
+            }
             _ => panic!("Wrong Card type."),
         }
     }
