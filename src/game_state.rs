@@ -5,7 +5,7 @@ pub trait AiInterface {
     fn get_bot_name(&self) -> String;
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct GameState {
     pub player_direction: message_parsing::Direction,
     pub opponent_direction: message_parsing::Direction,
