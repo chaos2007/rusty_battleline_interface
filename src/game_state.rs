@@ -24,15 +24,59 @@ pub struct GameHandler {
 
 
 impl GameHandler {
+    pub fn color_from_string(&self, name: &String) -> message_parsing::Color {
+        if let Some(index) = self.state.colors.iter().position(|i| *i == *name) {
+            match index {
+                0 => message_parsing::Color::Color1,
+                1 => message_parsing::Color::Color2,
+                2 => message_parsing::Color::Color3,
+                3 => message_parsing::Color::Color4,
+                4 => message_parsing::Color::Color5,
+                _ => message_parsing::Color::Color6,
+            }
+        } else {
+            message_parsing::Color::Color1
+        }
+    }
+    pub fn string_from_color(&self, color: message_parsing::Color) -> String {
+        match color {
+            message_parsing::Color::Color1 => self.state.colors[0].clone(),
+            message_parsing::Color::Color2 => self.state.colors[1].clone(),
+            message_parsing::Color::Color3 => self.state.colors[2].clone(),
+            message_parsing::Color::Color4 => self.state.colors[3].clone(),
+            message_parsing::Color::Color5 => self.state.colors[4].clone(),
+            message_parsing::Color::Color6 => self.state.colors[5].clone(),
+        }
+    }
+    pub fn convert_card_string_to_card(&self,
+                                       cs: &message_parsing::CardString)
+                                       -> message_parsing::Card {
+        message_parsing::Card {
+            number: cs.number,
+            color: self.color_from_string(&cs.color),
+        }
+    }
+    pub fn convert_vector_card_string_to_cards(&self,
+                                               cs: &Vec<message_parsing::CardString>)
+                                               -> Vec<message_parsing::Card> {
+        let mut card_vec: Vec<message_parsing::Card> = vec![];
+        for card in cs {
+            card_vec.push(self.convert_card_string_to_card(card));
+        }
+        card_vec
+    }
+
     pub fn run_one_round(&mut self, ai: &AiInterface, message: String) {
         let x = message_parsing::parse_message(message);
         match x {
             message_parsing::Message::OpponentPlay { number: _, card } => {
+                let card = self.convert_card_string_to_card(&card);
                 if let Some(index) = self.state.deck.iter().position(|i| *i == card) {
                     self.state.deck.remove(index);
                 }
             }
             message_parsing::Message::PlayerHand { direction: _, cards } => {
+                let cards = self.convert_vector_card_string_to_cards(&cards);
                 for card in &cards {
                     if let Some(index) = self.state.deck.iter().position(|i| *i == *card) {
                         self.state.deck.remove(index);
@@ -40,10 +84,8 @@ impl GameHandler {
                 }
                 self.state.player_hand = cards;
             }
-            message_parsing::Message::FlagStatus { flag_num: num,
-                                                   direction,
-                                                   cards } => {
-
+            message_parsing::Message::FlagStatus { flag_num: num, direction, cards } => {
+                let cards = self.convert_vector_card_string_to_cards(&cards);
                 for card in &cards {
                     if let Some(index) = self.state.deck.iter().position(|i| *i == *card) {
                         self.state.deck.remove(index);
@@ -86,15 +128,18 @@ impl GameHandler {
                     self.state.claim_status.push(message_parsing::ClaimStatus::Unclaimed);
                 }
 
+                self.state.colors = colors.clone();
                 for i in 1..10 {
                     for x in colors.to_vec() {
-                        self.state.deck.push(message_parsing::Card {
-                            color: x,
-                            number: i,
-                        });
+                        let temp = self.color_from_string(&x);
+                        {
+                            self.state.deck.push(message_parsing::Card {
+                                color: temp,
+                                number: i,
+                            })
+                        };
                     }
                 }
-                self.state.colors = colors;
             }
             message_parsing::Message::PlayCard => {
                 println!("{}", ai.update_game_state(&self.state));
@@ -176,13 +221,14 @@ mod test_game_state {
             expected.push(vec![]);
         }
         expected[0] = vec![mp::Card {
-                               color: String::from("red"),
+                               color: mp::Color::Color1,
                                number: 3,
                            },
                            mp::Card {
-                               color: String::from("blue"),
+                               color: mp::Color::Color2,
                                number: 7,
                            }];
+        handler.run_one_round(&ai, String::from("colors red blue 3 4 5 6"));
         handler.run_one_round(&ai, String::from("player north name"));
         handler.run_one_round(&ai, String::from("flag 1 cards north red,3 blue,7"));
         assert_eq!(expected, handler.state.player_side);
@@ -197,13 +243,14 @@ mod test_game_state {
             expected.push(vec![]);
         }
         expected[1] = vec![mp::Card {
-                               color: String::from("red"),
+                               color: mp::Color::Color1,
                                number: 3,
                            },
                            mp::Card {
-                               color: String::from("blue"),
+                               color: mp::Color::Color2,
                                number: 7,
                            }];
+        handler.run_one_round(&ai, String::from("colors red blue 3 4 5 6"));
         handler.run_one_round(&ai, String::from("player north name"));
         handler.run_one_round(&ai, String::from("flag 2 cards south red,3 blue,7"));
         assert_eq!(expected, handler.state.opponent_side);
@@ -214,7 +261,7 @@ mod test_game_state {
         let mut handler: GameHandler = Default::default();
         let ai = TestAi {};
         let expected_card = mp::Card {
-            color: String::from("a"),
+            color: mp::Color::Color1,
             number: 7,
         };
         handler.run_one_round(&ai, String::from("colors a b c d e f"));
@@ -229,11 +276,11 @@ mod test_game_state {
         let mut handler: GameHandler = Default::default();
         let ai = TestAi {};
         let expected_cards = vec![mp::Card {
-                                      color: String::from("a"),
+                                      color: mp::Color::Color1,
                                       number: 7,
                                   },
                                   mp::Card {
-                                      color: String::from("c"),
+                                      color: mp::Color::Color3,
                                       number: 3,
                                   }];
         handler.run_one_round(&ai, String::from("colors a b c d e f"));
@@ -253,11 +300,11 @@ mod test_game_state {
         let mut handler: GameHandler = Default::default();
         let ai = TestAi {};
         let expected_cards = vec![mp::Card {
-                                      color: String::from("a"),
+                                      color: mp::Color::Color1,
                                       number: 7,
                                   },
                                   mp::Card {
-                                      color: String::from("c"),
+                                      color: mp::Color::Color3,
                                       number: 3,
                                   }];
         handler.run_one_round(&ai, String::from("colors a b c d e f"));
@@ -271,11 +318,11 @@ mod test_game_state {
         let mut handler: GameHandler = Default::default();
         let ai = TestAi {};
         let expected_cards = vec![mp::Card {
-                                      color: String::from("a"),
+                                      color: mp::Color::Color1,
                                       number: 7,
                                   },
                                   mp::Card {
-                                      color: String::from("c"),
+                                      color: mp::Color::Color3,
                                       number: 3,
                                   }];
         handler.run_one_round(&ai, String::from("colors a b c d e f"));

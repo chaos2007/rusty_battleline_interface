@@ -11,8 +11,24 @@ impl Default for Direction {
 }
 
 #[derive(PartialEq, Debug, Clone)]
-pub struct Card {
+pub struct CardString {
     pub color: String,
+    pub number: i32,
+}
+
+#[derive(PartialEq, Debug, Copy, Clone)]
+pub enum Color {
+    Color1,
+    Color2,
+    Color3,
+    Color4,
+    Color5,
+    Color6,
+}
+
+#[derive(PartialEq, Debug, Copy, Clone)]
+pub struct Card {
+    pub color: Color,
     pub number: i32,
 }
 
@@ -44,15 +60,15 @@ pub enum Message {
     FlagStatus {
         flag_num: u32,
         direction: Direction,
-        cards: Vec<Card>,
+        cards: Vec<CardString>,
     },
     OpponentPlay {
         number: i32,
-        card: Card,
+        card: CardString,
     },
     PlayerHand {
         direction: Direction,
-        cards: Vec<Card>,
+        cards: Vec<CardString>,
     },
     PlayCard,
 }
@@ -82,11 +98,11 @@ fn convert_claim_status(message: &str) -> ClaimStatus {
     }
 }
 
-fn convert_string_to_card(message: &str) -> Card {
+fn convert_string_to_card(message: &str) -> CardString {
     let split: Vec<&str> = message.split(',').collect();
     let b = String::from(split[0]);
     let c = split[1].parse::<i32>().unwrap();
-    Card {
+    CardString {
         color: b,
         number: c,
     }
@@ -243,14 +259,14 @@ mod test_parsing_messages {
 
     #[test]
     fn flag_card_message() {
-        let cards_vec = vec![Card {
-                             color: String::from("red"),
-                             number: 3,
-                         },
-                         Card {
-                             color: String::from("blue"),
-                             number: 9,
-                         }];
+        let cards_vec = vec![CardString {
+                                 color: String::from("red"),
+                                 number: 3,
+                             },
+                             CardString {
+                                 color: String::from("blue"),
+                                 number: 9,
+                             }];
         let x = parse_message(String::from("flag 3 cards north red,3 blue,9"));
         match x {
             Message::FlagStatus { flag_num: 3, direction: Direction::North, cards } => {
@@ -262,18 +278,18 @@ mod test_parsing_messages {
 
     #[test]
     fn player_hand_message() {
-        let cards_vec = vec![Card {
-                             color: String::from("red"),
-                             number: 3,
-                         },
-                         Card {
-                             color: String::from("blue"),
-                             number: 6,
-                         },
-                         Card {
-                             color: String::from("green"),
-                             number: 4,
-                         }];
+        let cards_vec = vec![CardString {
+                                 color: String::from("red"),
+                                 number: 3,
+                             },
+                             CardString {
+                                 color: String::from("blue"),
+                                 number: 6,
+                             },
+                             CardString {
+                                 color: String::from("green"),
+                                 number: 4,
+                             }];
         let x = parse_message(String::from("player north hand red,3 blue,6 green,4"));
         match x {
             Message::PlayerHand { direction: Direction::North, cards } => {
