@@ -17,15 +17,9 @@ pub struct GameState {
     pub player_hand: Vec<message_parsing::Card>,
 }
 
-#[derive(Default)]
-pub struct GameHandler {
-    pub state: GameState,
-}
-
-
-impl GameHandler {
+impl GameState {
     pub fn color_from_string(&self, name: &String) -> message_parsing::Color {
-        if let Some(index) = self.state.colors.iter().position(|i| *i == *name) {
+        if let Some(index) = self.colors.iter().position(|i| *i == *name) {
             match index {
                 0 => message_parsing::Color::Color1,
                 1 => message_parsing::Color::Color2,
@@ -40,12 +34,12 @@ impl GameHandler {
     }
     pub fn string_from_color(&self, color: message_parsing::Color) -> String {
         match color {
-            message_parsing::Color::Color1 => self.state.colors[0].clone(),
-            message_parsing::Color::Color2 => self.state.colors[1].clone(),
-            message_parsing::Color::Color3 => self.state.colors[2].clone(),
-            message_parsing::Color::Color4 => self.state.colors[3].clone(),
-            message_parsing::Color::Color5 => self.state.colors[4].clone(),
-            message_parsing::Color::Color6 => self.state.colors[5].clone(),
+            message_parsing::Color::Color1 => self.colors[0].clone(),
+            message_parsing::Color::Color2 => self.colors[1].clone(),
+            message_parsing::Color::Color3 => self.colors[2].clone(),
+            message_parsing::Color::Color4 => self.colors[3].clone(),
+            message_parsing::Color::Color5 => self.colors[4].clone(),
+            message_parsing::Color::Color6 => self.colors[5].clone(),
         }
     }
     pub fn convert_card_string_to_card(&self,
@@ -65,18 +59,26 @@ impl GameHandler {
         }
         card_vec
     }
+}
 
+#[derive(Default)]
+pub struct GameHandler {
+    pub state: GameState,
+}
+
+
+impl GameHandler {
     pub fn run_one_round(&mut self, ai: &AiInterface, message: String) {
         let x = message_parsing::parse_message(message);
         match x {
             message_parsing::Message::OpponentPlay { number: _, card } => {
-                let card = self.convert_card_string_to_card(&card);
+                let card = self.state.convert_card_string_to_card(&card);
                 if let Some(index) = self.state.deck.iter().position(|i| *i == card) {
                     self.state.deck.remove(index);
                 }
             }
             message_parsing::Message::PlayerHand { direction: _, cards } => {
-                let cards = self.convert_vector_card_string_to_cards(&cards);
+                let cards = self.state.convert_vector_card_string_to_cards(&cards);
                 for card in &cards {
                     if let Some(index) = self.state.deck.iter().position(|i| *i == *card) {
                         self.state.deck.remove(index);
@@ -85,7 +87,7 @@ impl GameHandler {
                 self.state.player_hand = cards;
             }
             message_parsing::Message::FlagStatus { flag_num: num, direction, cards } => {
-                let cards = self.convert_vector_card_string_to_cards(&cards);
+                let cards = self.state.convert_vector_card_string_to_cards(&cards);
                 for card in &cards {
                     if let Some(index) = self.state.deck.iter().position(|i| *i == *card) {
                         self.state.deck.remove(index);
@@ -131,7 +133,7 @@ impl GameHandler {
                 self.state.colors = colors.clone();
                 for i in 1..10 {
                     for x in colors.to_vec() {
-                        let temp = self.color_from_string(&x);
+                        let temp = self.state.color_from_string(&x);
                         {
                             self.state.deck.push(message_parsing::Card {
                                 color: temp,
