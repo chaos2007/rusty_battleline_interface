@@ -11,6 +11,7 @@ pub struct GameState {
     pub opponent_direction: message_parsing::Direction,
     pub deck: Vec<message_parsing::Card>,
     pub colors: Vec<String>,
+    pub colors_vec: Vec<message_parsing::Color>,
     pub claim_status: Vec<message_parsing::ClaimStatus>,
     pub opponent_side: Vec<Vec<message_parsing::Card>>,
     pub player_side: Vec<Vec<message_parsing::Card>>,
@@ -131,6 +132,13 @@ impl GameHandler {
                 }
 
                 self.state.colors = colors.clone();
+                self.state.colors_vec = vec![];
+                for color in &colors {
+                    let temp = self.state.color_from_string(color);
+                    {
+                        self.state.colors_vec.push(temp);
+                    }
+                }
                 for i in 1..10 {
                     for x in colors.to_vec() {
                         let temp = self.state.color_from_string(&x);
@@ -192,9 +200,16 @@ mod test_game_state {
                           String::from("d"),
                           String::from("e"),
                           String::from("f")];
+        let colors_vec = vec![mp::Color::Color1,
+                              mp::Color::Color2,
+                              mp::Color::Color3,
+                              mp::Color::Color4,
+                              mp::Color::Color5,
+                              mp::Color::Color6];
         handler.run_one_round(&ai, String::from("colors a b c d e f"));
         assert_eq!(54, handler.state.deck.len());
         assert_eq!(colors, handler.state.colors);
+        assert_eq!(colors_vec, handler.state.colors_vec);
     }
 
     #[test]
